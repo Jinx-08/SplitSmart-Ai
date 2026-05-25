@@ -7,6 +7,7 @@ Professional reference for the API routes currently implemented in this reposito
 - All request bodies are JSON.
 - Path params are shown as `:id` placeholders.
 - Validation rules are enforced via `express-validator`.
+- Protected routes require an `Authorization: Bearer <token>` header.
 
 ## Base paths
 
@@ -39,6 +40,11 @@ Example:
 }
 ```
 
+Response body:
+- `message` (string)
+- `user` (object)
+- `token` (string) - Supabase access token
+
 ### POST /login
 
 Authenticate a user.
@@ -56,7 +62,49 @@ Example:
 }
 ```
 
+Response body:
+- `message` (string)
+- `user` (object)
+- `token` (string) - Supabase access token
+
+### GET /me
+
+Fetch the current authenticated user.
+
+Headers:
+- `Authorization` (string, required) - `Bearer <token>`
+
+Response body:
+- `id` (string)
+- `email` (string)
+- `first_name` (string, nullable)
+- `last_name` (string, nullable)
+- `avatar_url` (string, nullable)
+- `message` (string)
+
+### POST /logout
+
+Logout the current user.
+
+Headers:
+- `Authorization` (string, required) - `Bearer <token>`
+
+### PUT /profile
+
+Update the current user's profile.
+
+Headers:
+- `Authorization` (string, required) - `Bearer <token>`
+
+Request body (all optional):
+- `first_name` (string)
+- `last_name` (string)
+- `email` (string, valid email)
+- `password` (string, min length 6)
+
 ## Expense routes (Backend/routes/expenseRoutes.js)
+
+All expense routes require authentication.
 
 ### POST /add
 

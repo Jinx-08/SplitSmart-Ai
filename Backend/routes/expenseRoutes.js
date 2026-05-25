@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const expenseController = require('../Controllers/expenseController');
 const { body } = require('express-validator');
+const { authMiddleware } = require('../middleware/authmiddleware');
+
+router.use(authMiddleware);
 
 
 router.post('/add',

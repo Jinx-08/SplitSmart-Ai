@@ -16,4 +16,15 @@ router.post('/login', [
     body('password').not().isEmpty().withMessage('Password is required')
 ], authController.logincontroller);
 
+router.get('/me', authMiddleware, authController.getCurrentUser);
+
+router.post('/logout', authMiddleware, authController.logoutcontroller);
+
+router.put('/profile', authMiddleware, [
+    body('first_name').optional().trim().notEmpty().withMessage('First name cannot be empty'),
+    body('last_name').optional().trim().notEmpty().withMessage('Last name cannot be empty'),
+    body('email').optional().trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
+    body('password').optional().isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
+], authController.updateProfile);
+
 module.exports = router; 
