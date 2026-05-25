@@ -12,6 +12,8 @@ app.use(cookieParser());
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
+const expenseRoutes = require('./routes/expenseRoutes');
+app.use('/api/expenses', expenseRoutes);
 
 
 module.exports = app;
