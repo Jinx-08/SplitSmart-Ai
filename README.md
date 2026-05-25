@@ -1,6 +1,6 @@
-# API Routes Reference
+# Splitwise-AI
 
-Professional reference for the auth, expense, and group routes defined in this folder.
+Professional reference for the API routes currently implemented in this repository.
 
 ## Overview
 
@@ -16,7 +16,7 @@ Routes are mounted by the server. Adjust examples to your actual mount points, s
 - Expenses: `/api/expenses`
 - Groups: `/api/groups`
 
-## Auth routes (authRoutes.js)
+## Auth routes (Backend/routes/authRoutes.js)
 
 ### POST /register
 
@@ -56,7 +56,7 @@ Example:
 }
 ```
 
-## Expense routes (expenseRoutes.js)
+## Expense routes (Backend/routes/expenseRoutes.js)
 
 ### POST /add
 
@@ -131,7 +131,7 @@ Path params:
 Request body:
 - The payload is defined by `splitExpense` in the controller.
 
-## Group routes (groupRoutes.js)
+## Group routes (Backend/routes/groupRoutes.js)
 
 ### POST /groups
 
