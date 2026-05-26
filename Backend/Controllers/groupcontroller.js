@@ -1,7 +1,29 @@
-const supabase = require('../Supabase/client')
+const { supabase } = require('../Supabase/client');
 const { validationResult } = require('express-validator');
-const jwt = require('jsonwebtoken');
 require('dotenv').config();
+
+const ensureGroupAdmin = async (groupId, userId) => {
+    const { data, error } = await supabase
+        .from('group_members')
+        .select('id')
+        .eq('group_id', groupId)
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .limit(1);
+    if (error) return { ok: false, error };
+    return { ok: data && data.length > 0 };
+};
+
+const ensureGroupMember = async (groupId, userId) => {
+    const { data, error } = await supabase
+        .from('group_members')
+        .select('id')
+        .eq('group_id', groupId)
+        .eq('user_id', userId)
+        .limit(1);
+    if (error) return { ok: false, error };
+    return { ok: data && data.length > 0 };
+};
 
 exports.createGroup = async (req, res) => {
     const { name, members } = req.body;
@@ -20,9 +42,11 @@ exports.createGroup = async (req, res) => {
         if (!group) {
             return res.status(500).json({ error: 'Failed to create group' });
         }
-        const groupMembers = members.map(member => ({
+        const uniqueMembers = Array.from(new Set([...members, created_by]));
+        const groupMembers = uniqueMembers.map(member => ({
             group_id: group.id,
-            user_id: member 
+            user_id: member,
+            role: member === created_by ? 'admin' : 'member'
         }));
         const { error: membersError } = await supabase.from('group_members').insert(groupMembers);
         if (membersError) return res.status(400).json({ error: membersError.message });
@@ -33,10 +57,34 @@ exports.createGroup = async (req, res) => {
     }
 };
 
-exports.getGroup = async (req, res) => {
+
+exports.getUserGroups = async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const { data, error } = await supabase
+            .from('group_members')
+            .select('group_id, groups(name)')
+            .eq('user_id', userId);
+        if (error) return res.status(400).json({ error: error.message });
+        const groups = data.map(item => ({ id: item.group_id, name: item.groups.name }));
+        res.json({ message: 'Groups retrieved successfully', groups });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+
+
+
+exports.getGroupandmembers = async (req, res) => {
     const groupId = req.params.id;
     const userId = req.user.id;
     try {
+        const memberCheck = await ensureGroupMember(groupId, userId);
+        if (memberCheck.error) return res.status(400).json({ error: memberCheck.error.message });
+        if (!memberCheck.ok) return res.status(403).json({ error: 'Forbidden' });
+
         const { data: groupData, error: groupError } = await supabase
             .from('groups')
             .select('*')
@@ -56,6 +104,36 @@ exports.getGroup = async (req, res) => {
     }
 };
 
+
+exports.updateGroup = async (req, res) => {
+    const groupId = req.params.id;
+    const { name } = req.body;
+    try {
+        const adminCheck = await ensureGroupAdmin(groupId, req.user.id);
+        if (adminCheck.error) return res.status(400).json({ error: adminCheck.error.message });
+        if (!adminCheck.ok) return res.status(403).json({ error: 'Forbidden' });
+
+        const { data: groupData, error: groupError } = await supabase
+            .from('groups')
+            .select('*')
+            .eq('id', groupId)
+            .single();
+        if (groupError) return res.status(400).json({ error: groupError.message });
+        const { error: updateError } = await supabase
+            .from('groups')
+            .update({ name })
+            .eq('id', groupId);
+        if (updateError) return res.status(400).json({ error: updateError.message });
+        res.json({ message: 'Group updated successfully', group: { id: groupId, name } });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+
+
+
 exports.inviteMember = async (req, res) => {
     const groupId = req.params.id;
     const { user_id , role   } = req.body;
@@ -64,6 +142,10 @@ exports.inviteMember = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
     try {
+        const adminCheck = await ensureGroupAdmin(groupId, req.user.id);
+        if (adminCheck.error) return res.status(400).json({ error: adminCheck.error.message });
+        if (!adminCheck.ok) return res.status(403).json({ error: 'Forbidden' });
+
         const { data: groupData, error: groupError } = await supabase
             .from('groups') 
             .select('*')
@@ -89,12 +171,16 @@ exports.inviteMember = async (req, res) => {
 
 exports.removeMember = async (req, res) => {
     const groupId = req.params.id;
-    const { user_id } = req.body;
+    const user_id = req.params.userId;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }   
     try {
+        const adminCheck = await ensureGroupAdmin(groupId, req.user.id);
+        if (adminCheck.error) return res.status(400).json({ error: adminCheck.error.message });
+        if (!adminCheck.ok) return res.status(403).json({ error: 'Forbidden' });
+
         const { data: groupData, error: groupError } = await supabase
             .from('groups') 
             .select('*')

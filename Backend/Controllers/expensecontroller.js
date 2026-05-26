@@ -1,6 +1,5 @@
-const supabase = require('../Supabase/client')
+const { supabase } = require('../Supabase/client');
 const { validationResult } = require('express-validator');
-const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 
@@ -61,11 +60,21 @@ exports.getExpenses = async (req, res) => {
         return res.status(401).json({ error: 'Unauthorized' });
     }   
     try {
+        const { data: membershipData, error: membershipError } = await supabase
+            .from('group_members')
+            .select('id')
+            .eq('group_id', groupId)
+            .eq('user_id', userId)
+            .limit(1);
+        if (membershipError) return res.status(400).json({ error: membershipError.message });
+        if (!membershipData || membershipData.length === 0) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
         const { data, error } = await supabase
             .from('expenses')
             .select('*')
-            .eq('group_id', groupId)
-            .eq('user_id', userId);
+            .eq('group_id', groupId);
         if (error) return res.status(400).json({ error: error.message });
         res.json({message: 'Expenses retrieved successfully', expenses: data });
     } catch (error) {
@@ -73,6 +82,44 @@ exports.getExpenses = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
+
+exports.getExpensesplitdetails = async (req, res) => {
+    const { id: userId } = req.user;
+    const expenseId = req.params.id;
+    if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    try {
+        const { data: expenseData, error: expenseError } = await supabase
+            .from('expenses')
+            .select('*')
+            .eq('id', expenseId)
+            .eq('user_id', userId)
+            .single();
+        if (expenseError) return res.status(400).json({ error: expenseError.message });
+        if (!expenseData) {
+            return res.status(404).json({ error: 'Expense not found' });
+        }
+        const { data: splitsData, error: splitsError } = await supabase
+            .from('splits')
+            .select('user_id, amount, users(email)')
+            .eq('expense_id', expenseId);
+        if (splitsError) return res.status(400).json({ error: splitsError.message });
+        const splitDetails = splitsData.map(split => ({
+            user_id: split.user_id,
+            amount: split.amount,
+            email: split.users.email
+        }));
+        res.json({ message: 'Expense split details retrieved successfully', expense: expenseData, splits: splitDetails });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+
+
 
 exports.deleteExpense = async (req, res) => {
     const { id: userId } = req.user;
@@ -85,7 +132,8 @@ exports.deleteExpense = async (req, res) => {
             .from('expenses')   
             .delete()
             .eq('id', expenseId)
-            .eq('user_id', userId);
+            .eq('user_id', userId)
+            .select();
         if (error) return res.status(400).json({ error: error.message });
         if (data.length === 0) {
             return res.status(404).json({ error: 'Expense not found' });

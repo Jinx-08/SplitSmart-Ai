@@ -1,6 +1,5 @@
-const supabase = require('../Supabase/client')
+const { supabase, supabaseAdmin } = require('../Supabase/client');
 const { validationResult } = require('express-validator');
-const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 exports.registercontroller = async (req, res) => {
@@ -19,9 +18,6 @@ exports.registercontroller = async (req, res) => {
     })
     if (error) return res.status(400).json({ error: error.message }) 
     
-    // Generate JWT token
-    const token = jwt.sign({ id: data.user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-
     res.json({
       message: 'Registration successful',
       user: {
@@ -47,9 +43,6 @@ exports.logincontroller = async (req, res) => {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) return res.status(400).json({ error: error.message })    
     
-    // Generate JWT token
-    const token = jwt.sign({ id: data.user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    
   res.json({
   message: 'Login successful',
   user: {
@@ -66,32 +59,24 @@ exports.logincontroller = async (req, res) => {
 }
 
 exports.getCurrentUser = async (req, res) => {
-      const userId = req.user.id;
-      try {
-        const { data, error } = await supabase.auth.getUserById(userId);
-        if (error) return res.status(400).json({ error: error.message });
-        res.json({
-          id: data.user.id,
-          email: data.user.email,
-          first_name: data.user.user_metadata?.first_name,
-          last_name: data.user.user_metadata?.last_name,
-          avatar_url: data.user.user_metadata?.avatar_url,
-          message: 'User fetched successfully'
-        });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
-      }
+      const user = req.user;
+      res.json({
+        id: user.id,
+        email: user.email,
+        first_name: user.user_metadata?.first_name,
+        last_name: user.user_metadata?.last_name,
+        avatar_url: user.user_metadata?.avatar_url,
+        message: 'User fetched successfully'
+      });
 } 
 
 
 exports.logoutcontroller = async (req, res) => {
-  const token = req.headers.authorization || req.cookies.token;
-  if (!token) {
-    return res.status(401).json({ error: 'No token provided' });
-  }
   try {
-    const { error } = await supabase.auth.signOut();
+    if (!supabaseAdmin) {
+      return res.status(500).json({ error: 'Server missing SUPABASE_SERVICE_ROLE_KEY' });
+    }
+    const { error } = await supabaseAdmin.auth.admin.signOut(req.user.id);
     if (error) return res.status(400).json({ error: error.message });
     res.json({ message: 'Logout successful' });
   } catch (error) {
@@ -108,14 +93,21 @@ exports.updateProfile = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
   }
   try {
+    if (!supabaseAdmin) {
+      return res.status(500).json({ error: 'Server missing SUPABASE_SERVICE_ROLE_KEY' });
+    }
+
     const updates = {};
-    if (first_name) updates['user_metadata.first_name'] = first_name;
-    if (last_name) updates['user_metadata.last_name'] = last_name;
+    const metadata = {};
+    if (first_name) metadata.first_name = first_name;
+    if (last_name) metadata.last_name = last_name;
+    if (Object.keys(metadata).length > 0) updates.data = metadata;
     if (email) updates.email = email;
     if (password) updates.password = password;
-    const { data, error } = await supabase.auth.update(updates);
+
+    const { data, error } = await supabaseAdmin.auth.admin.updateUserById(userId, updates);
     if (error) return res.status(400).json({ error: error.message });
-    res.json({  
+    res.json({
       message: 'Profile updated successfully',
       user: {
         id: data.user.id,
