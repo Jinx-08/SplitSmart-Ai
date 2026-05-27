@@ -13,7 +13,7 @@ exports.registercontroller = async (req, res) => {
       email, 
       password,
       options: {
-        data: { name: `${first_name} ${last_name}` }
+        data: { first_name, last_name, name: `${first_name} ${last_name}` }
       }
     })
     if (error) return res.status(400).json({ error: error.message }) 

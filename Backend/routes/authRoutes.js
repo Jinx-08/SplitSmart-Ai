@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../Controllers/authController');
 const { body } = require('express-validator');
-const authMiddleware = require('../middleware/authmiddleware');
+const { authMiddleware } = require('../middleware/authmiddleware');
 
 router.post('/register', [
     body('first_name').trim().notEmpty().withMessage('First name is required'),

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const groupController = require('../Controllers/groupController');
 const { body, param } = require('express-validator');
-const authMiddleware = require('../middleware/authmiddleware');
+const { authMiddleware } = require('../middleware/authmiddleware');
 
 
 router.post('/groups', authMiddleware,
