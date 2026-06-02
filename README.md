@@ -1,244 +1,100 @@
-# Splitwise-AI
+# SplitSmart AI
 
-Professional reference for the API routes currently implemented in this repository.
+SplitSmart AI is a full stack expense splitting app with AI assisted categorization and anomaly detection. It pairs a Node and Express API with a React UI, then adds a FastAPI service for ML powered insights.
 
-## Overview
+## Why it is useful
 
-- All request bodies are JSON.
-- Path params are shown as `:id` placeholders.
-- Validation rules are enforced via `express-validator`.
-- Protected routes require an `Authorization: Bearer <token>` header.
+- Track shared expenses across groups with clear splits.
+- Categorize expenses automatically with an ML model.
+- Flag unusual expenses for quick review.
+- Optimize settlements to reduce the number of transfers.
 
-## Base paths
+## Architecture
 
-Routes are mounted by the server. Adjust examples to your actual mount points, such as:
-
-- Auth: `/api/auth`
-- Expenses: `/api/expenses`
-- Groups: `/api/groups`
-
-## Auth routes (Backend/routes/authRoutes.js)
-
-### POST /register
-
-Create a new user account.
-
-Request body:
-- `first_name` (string, required)
-- `last_name` (string, required)
-- `email` (string, required, valid email)
-- `password` (string, required, min length 6)
-
-Example:
-
-```json
-{
-  "first_name": "Taylor",
-  "last_name": "Lee",
-  "email": "taylor@example.com",
-  "password": "secret123"
-}
+```mermaid
+flowchart LR
+  UI[Frontend - React] --> API[Backend - Express]
+  API --> DB[Supabase]
+  API --> AI[AI Service - FastAPI]
 ```
 
-Response body:
-- `message` (string)
-- `user` (object)
-- `token` (string) - Supabase access token
+## Tech stack
 
-### POST /login
+- Frontend: React, Tailwind CSS, Chart.js
+- Backend: Node.js, Express, Supabase
+- AI Service: FastAPI, joblib
 
-Authenticate a user.
+## Project structure
 
-Request body:
-- `email` (string, required, valid email)
-- `password` (string, required)
+- Frontend: UI and client side state
+- Backend: REST API, auth, expenses, groups, settlements
+- ai: ML service, model loading, inference endpoints
 
-Example:
+## Getting started
 
-```json
-{
-  "email": "taylor@example.com",
-  "password": "secret123"
-}
+### Prerequisites
+
+- Node.js 18+
+- Python 3.10+
+- A Supabase project
+
+### 1) Backend setup
+
+Create a `.env` file inside `Backend` with the following keys:
+
+```env
+PORT=3000
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=optional_service_role_key
+AI_SERVICE_URL=http://localhost:8000
 ```
 
-Response body:
-- `message` (string)
-- `user` (object)
-- `token` (string) - Supabase access token
+Install dependencies and start the API:
 
-### GET /me
-
-Fetch the current authenticated user.
-
-Headers:
-- `Authorization` (string, required) - `Bearer <token>`
-
-Response body:
-- `id` (string)
-- `email` (string)
-- `first_name` (string, nullable)
-- `last_name` (string, nullable)
-- `avatar_url` (string, nullable)
-- `message` (string)
-
-### POST /logout
-
-Logout the current user.
-
-Headers:
-- `Authorization` (string, required) - `Bearer <token>`
-
-### PUT /profile
-
-Update the current user's profile.
-
-Headers:
-- `Authorization` (string, required) - `Bearer <token>`
-
-Request body (all optional):
-- `first_name` (string)
-- `last_name` (string)
-- `email` (string, valid email)
-- `password` (string, min length 6)
-
-## Expense routes (Backend/routes/expenseRoutes.js)
-
-All expense routes require authentication.
-
-### POST /add
-
-Create a new expense.
-
-Request body:
-- `group_id` (string, required)
-- `amount` (number, required, > 0)
-- `split_type` (string, required, `equal` or `unequal`)
-- `date` (string, required, ISO 8601 date)
-- `category` (string, required)
-
-Example:
-
-```json
-{
-  "group_id": "group_123",
-  "amount": 42.5,
-  "split_type": "equal",
-  "date": "2026-05-25",
-  "category": "Food"
-}
+```bash
+cd Backend
+npm install
+node server.js
 ```
 
-### GET /group/:id/expenses
+### 2) AI service setup
 
-List expenses for a group.
+Install dependencies and start the ML service:
 
-Path params:
-- `id` (string, required) - Group ID
-
-### DELETE /delete/:id
-
-Delete an expense.
-
-Path params:
-- `id` (string, required) - Expense ID
-
-### PUT /update/:id
-
-Update an expense.
-
-Path params:
-- `id` (string, required) - Expense ID
-
-Request body:
-- `group_id` (string, required)
-- `amount` (number, required, > 0)
-- `split_type` (string, required, `equal` or `unequal`)
-- `date` (string, required, ISO 8601 date)
-- `category` (string, required)
-
-Example:
-
-```json
-{
-  "group_id": "group_123",
-  "amount": 55.0,
-  "split_type": "unequal",
-  "date": "2026-05-25",
-  "category": "Travel"
-}
+```bash
+cd ai
+pip install -r requirements.txt
+uvicorn api.main:app --reload --port 8000
 ```
 
-### POST /expense/:id/recipients
+Make sure the trained models exist in `ai/models`:
 
-Split an expense across recipients.
+- `expense_categorization_model.joblib`
+- `expense_anomaly_model.joblib`
 
-Path params:
-- `id` (string, required) - Expense ID
+### 3) Frontend setup
 
-Request body:
-- The payload is defined by `splitExpense` in the controller.
+Install dependencies:
 
-## Group routes (Backend/routes/groupRoutes.js)
-
-### POST /groups
-
-Create a new group.
-
-Request body:
-- `name` (string, required)
-- `members` (array, required, min 2 items)
-
-Example:
-
-```json
-{
-  "name": "Roommates",
-  "members": ["user_1", "user_2"]
-}
+```bash
+cd Frontend
+npm install
 ```
 
-### GET /group/:id
+If the frontend scripts are not defined yet, add your preferred dev and build scripts in `Frontend/package.json` before starting the UI.
 
-Fetch a group by ID.
+## Configuration notes
 
-Path params:
-- `id` (string, required) - Group ID
+- CORS for the AI service is configured to allow `http://localhost:3000`.
+- The backend expects JSON requests and uses Supabase tokens for auth.
 
-### POST /groups/:id/invite
+## Roadmap ideas
 
-Invite a user to a group.
+- Add expense receipt OCR.
+- Improve anomaly explanations.
+- Add group level budgeting and alerts.
 
-Path params:
-- `id` (string, required) - Group ID
+## License
 
-Request body:
-- `user_id` (string, required)
-- `role` (string, required, `member` or `admin`)
-
-Example:
-
-```json
-{
-  "user_id": "user_3",
-  "role": "member"
-}
-```
-
-### POST /groups/:id/remove
-
-Remove a user from a group.
-
-Path params:
-- `id` (string, required) - Group ID
-
-Request body:
-- `user_id` (string, required)
-
-Example:
-
-```json
-{
-  "user_id": "user_2"
-}
-```
+Add your license here.
