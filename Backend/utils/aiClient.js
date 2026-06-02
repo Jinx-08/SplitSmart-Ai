@@ -37,6 +37,7 @@ async function checkAnomaly(expense) {
         });
         return { is_anomaly: data.is_anomaly, score: data.score };
     } catch (err) {
+
         console.warn('AI anomaly service unavailable:', err.message);
         return { is_anomaly: false, score: 0 };
     }
