@@ -1,15 +1,28 @@
 {
+  "name": "splitsmart-ai",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {
-    "@supabase/supabase-js": "^2.106.0",
-    "@tailwindcss/postcss": "^4.3.0",
-    "axios": "^1.16.1",
-    "chart.js": "^4.5.1",
-    "react-chartjs-2": "^5.3.1",
-    "react-router-dom": "^7.15.1"
+    "@tailwindcss/vite": "^4.1.14",
+    "@types/d3": "^7.4.3",
+    "@vitejs/plugin-react": "^5.0.4",
+    "axios": "^1.7.0",
+    "d3": "^7.9.0",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "qrcode.react": "^4.2.0",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "vite": "^6.2.3"
   },
   "devDependencies": {
-    "autoprefixer": "^10.5.0",
-    "postcss": "^8.5.15",
-    "tailwindcss": "^4.3.0"
+    "autoprefixer": "^10.4.21",
+    "tailwindcss": "^4.1.14"
   }
 }

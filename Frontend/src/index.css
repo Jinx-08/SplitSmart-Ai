@@ -1,0 +1,177 @@
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #000000;
+  color: #f3f4f6;
+  overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* SMOOTH TRANSITIONS FOR ALL THEME SWITCHING ELEMENTS */
+.theme-transition {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.light {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* ELEGANT LIGHT MODE CARD OVERRIDES */
+.light .bg-black {
+  background-color: #f1f5f9; /* slate-100 */
+}
+.light .bg-zinc-950, .light .bg-neutral-950, .light .bg-zinc-900, .light .bg-neutral-900 {
+  background-color: #ffffff;
+}
+.light .bg-neutral-950\/40, .light .bg-black\/80 {
+  background-color: rgba(241, 245, 249, 0.82);
+}
+.light .bg-neutral-900\/60, .light .bg-neutral-90% {
+  background-color: #f8fafc;
+}
+/* TEXT COLOR ADAPTATIONS */
+.light .text-white {
+  color: #0f172a; /* slate-900 */
+}
+.light .text-neutral-200, .light .text-zinc-200, .light .text-zinc-300, .light .text-neutral-300 {
+  color: #1e293b; /* slate-800 */
+}
+.light .text-white\/40, .light .text-white\/50, .light .text-white\/60, .light .text-white\/70, .light .text-neutral-400 {
+  color: #475569; /* slate-600 */
+}
+.light .text-neutral-500, .light .text-zinc-500 {
+  color: #64748b; /* slate-500 */
+}
+.light .text-white\/80 {
+  color: #1e293b;
+}
+
+/* BUTTONS IN LIGHT MODE */
+.light .bg-white.text-black {
+  background-color: #1e293b;
+  color: #ffffff;
+}
+.light .bg-white.text-black:hover {
+  background-color: #0f172a;
+}
+.light .bg-neutral-900.border-neutral-800 {
+  background-color: #ffffff;
+  border-color: #cbd5e1;
+}
+.light .bg-neutral-900.border-neutral-800:hover {
+  background-color: #f1f5f9;
+}
+.light .text-neutral-400.hover\:text-white:hover {
+  color: #0f172a;
+}
+
+/* SPECIAL COLOR CORRECTION FOR EMERALD AND OTHER ALERTS */
+.light .bg-emerald-950\/20, .light .bg-emerald-950\/40 {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+}
+.light .text-emerald-400 {
+  color: #047857 !important; /* emerald-700 */
+}
+.light .border-emerald-900\/30 {
+  border-color: #a7f3d0 !important;
+}
+
+/* BORDERS OVERRIDES */
+.light .border-white\/10, .light .border-white\/5, .light .border-neutral-800, .light .border-neutral-900, .light .border-zinc-900 {
+  border-color: #e2e8f0; /* slate-200 */
+}
+
+/* SPECIFIC USER-INTERFACE ENHANCEMENTS */
+.light #main-navigation {
+  background-color: rgba(248, 250, 252, 0.85);
+  border-bottom: 1px solid #e2e8f0;
+}
+.light #main-navigation button {
+  color: #475569;
+}
+.light #main-navigation button:hover {
+  color: #0f172a;
+}
+.light #main-navigation .text-white {
+  color: #0f172a;
+}
+.light #main-navigation .border-white {
+  border-color: #0f172a;
+}
+
+/* SELECTORS FOR FORM CONTROLS & PARSER IN LIGHT MODE */
+.light textarea, .light select, .light input[type="text"], .light input[type="number"], .light input[type="password"], .light input[type="email"] {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+.light textarea:focus, .light select:focus, .light input:focus {
+  border-color: #0f172a !important;
+  outline: none !important;
+}
+
+/* HERO GRAPHICS OVERRIDES */
+.light #hero-ai-badge, .light #splitsmart-ai-badge {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+.light #hero-ai-badge span {
+  background-color: #0f172a;
+}
+.light #splitsmart-hero {
+  background-color: #f8fafc;
+}
+
+/* SANDBOX CARDS */
+.light .bg-zinc-900\/50, .light .bg-neutral-900\/30 {
+  background-color: #ffffff;
+}
+
+/* MODALS AND OVERLAYS EXPLICIT CONTRAST */
+.light #share-qr-modal-backdrop, .light #save-bill-modal-backdrop, .light id-info-modal-backdrop {
+  background-color: rgba(15, 23, 42, 0.6); /* elegant dark blur backdrop overlay instead of pure black list */
+}
+
+/* MODAL CONTAINER LIGHT STYLES */
+.light .bg-zinc-950.border-neutral-800 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Smooth custom sleek scrollbar for modern feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+body.light ::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 4px;
+}
+body.light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+body.light ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+

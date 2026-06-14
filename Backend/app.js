@@ -5,7 +5,10 @@ require('dotenv').config();
 const cookieParser = require('cookie-parser');
 
 
-app.use(cors());
+app.use(cors({
+    origin: process.env.CORS_ORIGIN || '*',
+    credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -17,6 +20,12 @@ app.use('/api/expenses', expenseRoutes);
 
 const groupRoutes = require('./routes/groupRoutes');
 app.use('/api/groups', groupRoutes);
+
+const billRoutes = require('./routes/billRoutes');
+app.use('/api/bills', billRoutes);
+
+const settlementRoutes = require('./routes/settlementRoutes');
+app.use('/api/settlements', settlementRoutes);
 
 
 // Error handling middleware
