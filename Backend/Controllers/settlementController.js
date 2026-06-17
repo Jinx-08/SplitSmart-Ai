@@ -1,5 +1,5 @@
 const { supabase } = require('../Supabase/client');
-const { calculatenetbalances, optimizeSettlements } = require('../utils/settlementoptimizer');
+const { calculatenetbalances, optimizeSettlements } = require('../utils/settlementOptimizer');
 
 async function isGroupMember(groupId, userId) {
     const { data, error } = await supabase
